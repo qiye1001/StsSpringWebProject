@@ -3,7 +3,7 @@ package Annotation;
 import org.junit.Test;
 
 public class AnnotationDemo {
-	
+	//
 	@Test
 	public void test() {
 		Class<Cat> cats =  Cat.class;
