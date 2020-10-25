@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Person>
+    <person personid = "n1">
+        <name>dadfa</name>
+        <address>r1rr</address>
+        <tel>213412541</tel>
+        <fax>414433</fax>
+    </person>
+    
+    <person personid = "n2">
+        <name>李四</name>
+        <address>acas1</address>
+        <tel>144344412</tel>
+        <fax>fqqcq</fax>
+    </person>
+</Person>

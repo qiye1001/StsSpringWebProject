@@ -1,0 +1,3 @@
+bean.target = AOP.IMangerImpl
+bean.advice = AOP.LogAdvice
+bean = AOP.ProxyFactory
