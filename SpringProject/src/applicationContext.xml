@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	default-autowire="byName"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd"> <!-- 在该容器中一次性将所有bean统一设置成自动装配 -->
+
+	<!-- set注入 (实际上是调用set方法)-->
+	<bean id="studentCourse" class="com.qiye.entry.Student">
+		<property name="stuNo" value="2"></property>
+		<property name="stuName">
+			<value type="java.lang.String">zs</value>
+		</property>
+		<property name="stuAge">
+			<value>13</value>
+		</property>
+	</bean>
+	
+	<bean id="teacher" class="com.qiye.entry.Teacher">
+		<property name="name" value="marry"></property>
+		<property name="age" value="18"></property>
+	</bean>
+	
+	<!--
+	<bean id="course" class="com.qiye.entry.Course">
+		<property name="courseHour" value="120"></property>
+		<property name="courseName" value="java"></property>
+		<property name="teacher" ref="teacher"></property>
+	</bean>
+	-->
+	
+	<!-- 构造器注入 -->
+	<bean id="course" class="com.qiye.entry.Course">
+		<constructor-arg ref="teacher" type="Teacher" index="2"></constructor-arg>
+		<constructor-arg value="120" type="String" index="0" name="courseHour"></constructor-arg>
+		<constructor-arg value="zs" type="String" index="1" name="courseName"></constructor-arg>
+	</bean>
+	
+	<!--
+	命名空间注入 (是找属性与id相同的bean 本质上是set注入)
+	需要 namesapces ==> 勾选 p-http://www.springframework......  
+	-->
+	<bean id="course-p" class="com.qiye.entry.Course" p:courseHour="123" p:teacher-ref="teacher" p:courseName="lis"></bean>
+	
+	<bean id="allColleactionType" class="com.qiye.entry.AllColleactionType">
+		<property name="map">
+			<map>
+				<entry>
+					<key><value>zs</value></key>
+					<value>123</value>
+				</entry>
+				<entry>
+					<key><value>lisi</value></key>
+					<value>321</value>
+				</entry>
+			</map>
+		</property>
+		
+		<property name="list">
+			<list>
+				<value>list234</value>
+				<value>list345</value>
+			</list>
+		</property>
+		
+		<property name="arr">
+			<array>
+				<value>aaa</value>
+				<value>bbb</value>
+				<null/>
+			</array>
+		</property>
+			
+		<property name="props">
+			<props>
+				<prop key="wangwu">王五</prop>
+				<prop key="zhaoliu">赵六</prop>
+			</props>
+		</property>
+		
+		<property name="set">
+			<set>
+				<value>set</value>
+			</set>
+		</property>
+	</bean>
+	
+	
+	<!-- 
+		自动装配 只适用于引用类型 虽然会降低代码量 但是会减低代码的可读性 使用时需谨慎
+		byName 根据类中的属性与bean中的id值进行匹配
+		byType 根据类中的类型与bean中class中的类进行匹配（此方法在当前IOC容器中只能有一个bean满足条件）
+		constructor 构造方法中形参的类型与bean中class中中的类进行匹配
+	 -->
+	 <bean id="student" class="com.qiye.entry.Student" autowire="byName"></bean>
+	 
+	 
+	 <!-- 
+	 	使用注解 添加扫描器  勾选namespaces ==> context-http://www.spring.....   
+	 	Spring在启动时, 会根据base-package中的包 扫描该包中的所有类 查找这些类中是否有注解@Component  如果有 则将该类加入到IOC容器中
+	 	base-package中如果有多个包可用逗号隔开 
+	 	-->
+	 <context:component-scan base-package="com.qiye.dao.impl.StudentDaoImpl"></context:component-scan>
+	 
+	 
+	 <!-- 
+	 	使用注解实现声明式事务（通过事务使方法要么全成功 要么全失败）
+	 	需要的jar包
+	 	spring-tx-4.3.9.RELEASE.jar  事务所需的jar
+	 	jdbc.jar	连接数据库所需的驱动包
+	 	commons-dbcp.jar 	连接池所使用的的数据源
+	 	commons-pool.jar	连接池
+	 	spring-jdbc-4.3.9.RELEASE.jar 	spring连接数据库所需的jar
+	 	aopalliance.jar 	aop依赖包
+
+		
+	  -->
+	  <tx:annotation-driven transaction-manager="txManager"/>	<!-- 依赖于事务管理器 -->
+	  
+	  <!-- 配置事务管理器 -->
+	  <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	  	<property name="dataSource" ref="dataSource"></property>
+	  </bean>
+	  
+	  <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+	  	<property name="url" value="jdbc:mysql://localhost:3306/user?serverTimezone=UTC"></property>
+	  	<property name="username"><value>root</value></property>
+	  	<property name="password"><value>123456</value></property>
+	  	<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+	  	<property name="maxIdle" value="6"></property>
+	  </bean>
+	  
+	  
+	  <!-- 
+	  	前置通知 
+	  	namespaces ==> aop-http://www.....
+	  	所需jar包
+	  		aopalliance.jar
+	  		aspectJweaver.jar
+	  	
+	  	普通类 ==> 前置通知 ： 实现MethodBeforeAdvice方法
+	  -->
+	  
+	  <bean id="studentDao" class="com.qiye.dao.impl.StudentDaoImpl"></bean>
+	  <bean id="studentServiceImpl" class="com.qiye.service.impl.StudentServiceImpl">
+	  	<property name="studentDao" ref="studentDao"></property>
+	  </bean>
+	  <bean id="before" class="com.qiye.aop.LogBefore"></bean>
+	  
+	  <!-- 将 方法 与 通知 进行关联 -->
+	  <aop:config>
+	  	<!-- 配置切入点 --> 
+	  	<!-- 
+	  		多个切入点 
+	  		expression="execution(....) or execution(...)"
+	  	-->
+	  	<aop:pointcut expression="execution(public void com.qiye.service.impl.StudentServiceImpl.addStudent(com.qiye.entry.Student))" id="pointcut"/>
+	  	<aop:advisor advice-ref="before" pointcut-ref="pointcut"/> <!-- advice-ref: 通知类， pointcut-ref：切入点 -->
+	  </aop:config>
+	  
+	  <bean id="logAfter" class="com.qiye.aop.LogAfter"></bean>
+	  <aop:config>
+	  	<aop:pointcut expression="execution(public void com.qiye.service.impl.StudentServiceImpl.addStudent(com.qiye.entry.Student))" id="pointcut2"/>
+	  	<aop:advisor advice-ref="logAfter" pointcut-ref="pointcut2"/>
+	  </aop:config>
+	  
+	  <bean id="logException" class="com.qiye.aop.LogException"></bean>
+	  <aop:config>
+	  	<aop:pointcut expression="execution(public void com.qiye.service.impl.StudentServiceImpl.addStudent(com.qiye.entry.Student))" id="pointcut3"/>
+	  	<aop:advisor advice-ref="logException" pointcut-ref="pointcut3"/>
+	  </aop:config>
+	  
+	  <bean id="logAround" class="com.qiye.aop.LogAround"></bean>
+	  <aop:config>
+	  	<aop:pointcut expression="execution(public void com.qiye.service.impl.StudentServiceImpl.addStudent(com.qiye.entry.Student))" id="pointcut4"/>
+	  	<aop:advisor advice-ref="logAround" pointcut-ref="pointcut4"/>
+	  </aop:config>
+	  
+	  
+	  
+	  <!-- 注解形式的通知  -->
+	  <aop:aspectj-autoproxy></aop:aspectj-autoproxy> <!-- 开启注解对AOP的支持 -->
+	  <context:component-scan base-package="com.qiye.aop"></context:component-scan>
+	  
+	  <!-- 通过配置(schema)实现通知 -->
+	  <bean id="logSchema" class="com.qiye.aop.LogSchema"></bean>
+	  <aop:config>
+	  	<aop:pointcut expression="execution(public * addStudent(..))" id="pcSchema"/>
+	  	<aop:aspect ref="logSchema">
+	  		<aop:before method="before" pointcut-ref="pcSchema"/>
+	  		<aop:after-returning method="after" pointcut-ref="pcSchema" returning="returningValue"/>
+	  		<aop:around method="around" pointcut-ref="pcSchema"/>
+	  		<aop:after-throwing method="wenException" pointcut-ref="pcSchema" throwing="e"/>
+	  		
+	  	</aop:aspect>
+	  </aop:config>
+</beans>
